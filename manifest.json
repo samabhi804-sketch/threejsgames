@@ -1,0 +1,9 @@
+{
+	"name": "3D Snakes & Ladders",
+	"short_name": "3D S&L",
+	"start_url": ".",
+	"display": "standalone",
+	"background_color": "#0a0a0e",
+	"theme_color": "#0a0a0e",
+	"icons": []
+}

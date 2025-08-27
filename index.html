@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="theme-color" content="#0a0a0e" />
+	<title>3D Snakes & Ladders</title>
+	<link rel="stylesheet" href="./styles.css" />
+	<link rel="manifest" href="./manifest.json" />
+</head>
+<body>
+	<div id="app">
+		<canvas id="game-canvas"></canvas>
+
+		<div id="hud" class="overlay">
+			<div class="top-bar">
+				<div id="turn-indicator">Turn: -</div>
+				<div id="dice-display">Dice: -</div>
+				<div id="fps-display">FPS: -</div>
+			</div>
+			<div class="right-panel">
+				<div class="panel-card">
+					<h3>Leaderboard</h3>
+					<ol id="leaderboard"></ol>
+				</div>
+				<div class="panel-card">
+					<h3>Mini-map</h3>
+					<canvas id="minimap" width="160" height="160"></canvas>
+				</div>
+			</div>
+			<div class="bottom-bar">
+				<button id="roll-btn">Roll Dice</button>
+				<button id="end-turn-btn">End Turn</button>
+				<button id="login-btn">Login</button>
+				<button id="logout-btn" style="display:none">Logout</button>
+			</div>
+		</div>
+
+		<div id="menu" class="overlay centered">
+			<div class="menu-card">
+				<h1>3D Snakes & Ladders</h1>
+				<div class="menu-actions">
+					<button id="play-single">Single Player</button>
+					<button id="play-local">Local Multiplayer</button>
+					<button id="play-online">Online Match</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Libraries: Three.js, controls, loaders, tween, socket.io, firebase -->
+	<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+	<script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+	<script src="https://unpkg.com/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+	<script src="https://unpkg.com/@tweenjs/tween.js@18.6.4/dist/tween.umd.js"></script>
+	<script src="https://cdn.socket.io/4.7.2/socket.io.min.js" crossorigin="anonymous"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+	<script src="./app.js"></script>
+</body>
+</html>
