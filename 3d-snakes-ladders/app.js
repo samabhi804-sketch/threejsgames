@@ -151,7 +151,9 @@
 
 	function endTurn() {
 		if (playerPositions[currentPlayer] >= 100) {
-			hud.turn.textContent = `Player ${currentPlayer + 1} wins!`;
+			const winnerName = `Player ${currentPlayer + 1}`;
+			hud.turn.textContent = `${winnerName} wins!`;
+			recordWin(winnerName);
 			return;
 		}
 		currentPlayer = (currentPlayer + 1) % playerMeshes.length;
@@ -166,6 +168,21 @@
 
 	document.getElementById('roll-btn').addEventListener('click', rollDice);
 	document.getElementById('end-turn-btn').addEventListener('click', endTurn);
+	document.getElementById('login-btn').addEventListener('click', async () => {
+		if (services && services.auth) {
+			try { await services.auth.signInAnonymously(); } catch (e) { console.warn(e); }
+		} else {
+			localStorage.setItem('guestUser', JSON.stringify({ name: 'Guest' }));
+			updateAuthUI();
+			fetchLeaderboard();
+		}
+	});
+	document.getElementById('logout-btn').addEventListener('click', async () => {
+		try { if (services && services.auth) await services.auth.signOut(); } catch (e) { console.warn(e); }
+		localStorage.removeItem('guestUser');
+		updateAuthUI();
+		fetchLeaderboard();
+	});
 
 	// Temp: ground grid helper
 	const grid = new THREE.GridHelper(20, 20, 0x666666, 0x333333);
@@ -214,9 +231,112 @@
 		document.getElementById('menu').style.display = 'none';
 	});
 
-	// Firebase placeholder
+	// Firebase, Leaderboard, and Networking helpers
+	const services = { firebaseApp: null, auth: null, db: null, user: null };
+	function updateAuthUI() {
+		const loginBtn = document.getElementById('login-btn');
+		const logoutBtn = document.getElementById('logout-btn');
+		const guest = JSON.parse(localStorage.getItem('guestUser') || 'null');
+		const isLoggedIn = !!(services.user || guest);
+		if (loginBtn && logoutBtn) {
+			loginBtn.style.display = isLoggedIn ? 'none' : '';
+			logoutBtn.style.display = isLoggedIn ? '' : 'none';
+		}
+	}
+	async function fetchLeaderboard() {
+		const list = hud.leaderboard;
+		if (!list) return;
+		list.innerHTML = '';
+		try {
+			if (services.db) {
+				const qs = await services.db.collection('leaderboard').orderBy('wins', 'desc').limit(10).get();
+				qs.forEach((doc) => {
+					const data = doc.data();
+					const li = document.createElement('li');
+					li.textContent = `${data.name || 'Anonymous'} — ${data.wins || 0}`;
+					list.appendChild(li);
+				});
+			} else {
+				const local = JSON.parse(localStorage.getItem('localLeaderboard') || '[]');
+				local
+					.sort((a,b)=> (b.wins||0) - (a.wins||0))
+					.slice(0,10)
+					.forEach((data) => {
+						const li = document.createElement('li');
+						li.textContent = `${data.name || 'Guest'} — ${data.wins || 0}`;
+						list.appendChild(li);
+					});
+			}
+		} catch (e) {
+			console.warn('Leaderboard fetch failed', e);
+		}
+	}
+	async function recordWin(name) {
+		try {
+			if (services.db && services.user) {
+				const uid = services.user.uid;
+				const ref = services.db.collection('leaderboard').doc(uid);
+				await services.db.runTransaction(async (tx) => {
+					const snap = await tx.get(ref);
+					const base = snap.exists ? snap.data() : { name: services.user.displayName || name || 'Anonymous', wins: 0 };
+					const updated = {
+						name: base.name || name || 'Anonymous',
+						wins: (base.wins || 0) + 1,
+						updated: firebase.firestore.FieldValue.serverTimestamp()
+					};
+					tx.set(ref, updated, { merge: true });
+				});
+			} else {
+				const local = JSON.parse(localStorage.getItem('localLeaderboard') || '[]');
+				const playerName = name || 'Guest';
+				const idx = local.findIndex((x) => x.name === playerName);
+				if (idx >= 0) local[idx].wins = (local[idx].wins || 0) + 1;
+				else local.push({ name: playerName, wins: 1 });
+				localStorage.setItem('localLeaderboard', JSON.stringify(local));
+			}
+		} catch (e) {
+			console.warn('recordWin failed', e);
+		} finally {
+			fetchLeaderboard();
+		}
+	}
 	window.initFirebase = (config) => {
-		firebase.initializeApp(config);
-		console.log('Firebase initialized');
+		if (!window.firebase) return null;
+		if (!services.firebaseApp) {
+			try { firebase.initializeApp(config); } catch (e) {}
+			services.firebaseApp = firebase.app();
+			services.auth = firebase.auth();
+			services.db = firebase.firestore();
+			services.auth.onAuthStateChanged((user) => {
+				services.user = user || null;
+				updateAuthUI();
+				fetchLeaderboard();
+			});
+			console.log('Firebase initialized');
+		}
+		return services.firebaseApp;
 	};
+	function initNetworking() {
+		const net = { socket: null, connected: false };
+		try {
+			if (typeof io === 'function') {
+				net.socket = io();
+				net.socket.on('connect', () => { net.connected = true; console.log('[net] connected'); });
+				net.socket.on('disconnect', () => { net.connected = false; console.log('[net] disconnected'); });
+			} else {
+				console.log('[net] socket.io not present; running offline hot-seat');
+			}
+		} catch (e) {
+			console.log('[net] init failed; using stub', e);
+		}
+		window.net = net;
+	}
+	initNetworking();
+	updateAuthUI();
+	fetchLeaderboard();
+	if ('serviceWorker' in navigator) {
+		window.addEventListener('load', () => {
+			navigator.serviceWorker.register('./service-worker.js').catch((e) => console.warn('SW register failed', e));
+		});
+	}
 })();
