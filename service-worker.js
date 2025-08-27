@@ -1,4 +1,4 @@
-const CACHE_NAME = '3dsl-v1';
+const CACHE_NAME = '3dsl-v2';
 const ASSETS = [
 	'./',
 	'./index.html',
