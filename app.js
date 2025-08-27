@@ -217,19 +217,22 @@
 	requestAnimationFrame(animate);
 
 	// Basic UI state
-	hud.turn.textContent = 'Turn: Player 1';
+	hud.turn.textContent = 'Turn: Ready';
 	hud.dice.textContent = 'Dice: -';
 
-	// Menu buttons (no-op for now)
-	document.getElementById('play-single').addEventListener('click', () => {
-		document.getElementById('menu').style.display = 'none';
-	});
-	document.getElementById('play-local').addEventListener('click', () => {
-		document.getElementById('menu').style.display = 'none';
-	});
-	document.getElementById('play-online').addEventListener('click', () => {
-		document.getElementById('menu').style.display = 'none';
-	});
+	function startGame() {
+		const menu = document.getElementById('menu');
+		if (menu) menu.style.display = 'none';
+		hud.turn.textContent = 'Turn: Player 1';
+	}
+
+	// Menu buttons
+	const btnSingle = document.getElementById('play-single');
+	const btnLocal = document.getElementById('play-local');
+	const btnOnline = document.getElementById('play-online');
+	if (btnSingle) btnSingle.addEventListener('click', startGame);
+	if (btnLocal) btnLocal.addEventListener('click', startGame);
+	if (btnOnline) btnOnline.addEventListener('click', startGame);
 
 	// Firebase, Leaderboard, and Networking helpers
 	const services = { firebaseApp: null, auth: null, db: null, user: null };
