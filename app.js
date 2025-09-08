@@ -1,4 +1,35 @@
 (() => {
+	// Check for required libraries
+	if (typeof THREE === 'undefined') {
+		console.error('Three.js library failed to load. Please check your internet connection.');
+		document.getElementById('app').innerHTML = '<div style="color: white; text-align: center; padding: 50px; font-family: Arial, sans-serif;"><h1>3D Snakes & Ladders</h1><p>Failed to load Three.js library. Please refresh the page or check your internet connection.</p></div>';
+		return;
+	}
+
+	if (typeof TWEEN === 'undefined') {
+		console.error('TWEEN library failed to load.');
+		// Create a basic fallback for TWEEN
+		window.TWEEN = {
+			Tween: function(obj) {
+				this.obj = obj;
+				this.to = function(target) { this.target = target; return this; };
+				this.easing = function() { return this; };
+				this.onComplete = function(callback) { this.completeCallback = callback; return this; };
+				this.start = function() {
+					Object.assign(this.obj, this.target);
+					if (this.completeCallback) this.completeCallback();
+					return this;
+				};
+			},
+			Easing: {
+				Quadratic: { InOut: function(t) { return t; } },
+				Cubic: { InOut: function(t) { return t; } }
+			},
+			update: function() {}
+		};
+		console.warn('Using fallback animation system');
+	}
+
 	const canvas = document.getElementById('game-canvas');
 	const hud = {
 		turn: document.getElementById('turn-indicator'),
@@ -162,12 +193,27 @@
 
 	function rollDice() {
 		const value = 1 + Math.floor(Math.random() * 6);
+		console.log(`Rolling dice: ${value}`);
 		hud.dice.textContent = `Dice: ${value}`;
 		movePlayerBy(value);
 	}
 
-	document.getElementById('roll-btn').addEventListener('click', rollDice);
-	document.getElementById('end-turn-btn').addEventListener('click', endTurn);
+	const rollBtn = document.getElementById('roll-btn');
+	const endTurnBtn = document.getElementById('end-turn-btn');
+
+	if (rollBtn) {
+		rollBtn.addEventListener('click', rollDice);
+		console.log('Roll button event listener attached');
+	} else {
+		console.error('Roll button not found');
+	}
+
+	if (endTurnBtn) {
+		endTurnBtn.addEventListener('click', endTurn);
+		console.log('End turn button event listener attached');
+	} else {
+		console.error('End turn button not found');
+	}
 	document.getElementById('login-btn').addEventListener('click', async () => {
 		if (services && services.auth) {
 			try { await services.auth.signInAnonymously(); } catch (e) { console.warn(e); }
@@ -230,9 +276,27 @@
 	const btnSingle = document.getElementById('play-single');
 	const btnLocal = document.getElementById('play-local');
 	const btnOnline = document.getElementById('play-online');
-	if (btnSingle) btnSingle.addEventListener('click', startGame);
-	if (btnLocal) btnLocal.addEventListener('click', startGame);
-	if (btnOnline) btnOnline.addEventListener('click', startGame);
+
+	if (btnSingle) {
+		btnSingle.addEventListener('click', startGame);
+		console.log('Single player button event listener attached');
+	} else {
+		console.error('Single player button not found');
+	}
+
+	if (btnLocal) {
+		btnLocal.addEventListener('click', startGame);
+		console.log('Local multiplayer button event listener attached');
+	} else {
+		console.error('Local multiplayer button not found');
+	}
+
+	if (btnOnline) {
+		btnOnline.addEventListener('click', startGame);
+		console.log('Online multiplayer button event listener attached');
+	} else {
+		console.error('Online multiplayer button not found');
+	}
 
 	// Firebase, Leaderboard, and Networking helpers
 	const services = { firebaseApp: null, auth: null, db: null, user: null };

@@ -1,63 +1,153 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<meta name="theme-color" content="#0a0a0e" />
-	<title>3D Snakes & Ladders</title>
-	<link rel="stylesheet" href="./styles.css" />
-	<link rel="manifest" href="./manifest.json" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="3D Snakes and Ladders - A modern web-based board game">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>3D Snakes & Ladders</title>
+    <link rel="stylesheet" href="./src/styles.css">
+    <link rel="icon" href="./assets/favicon.ico" type="image/x-icon">
 </head>
 <body>
-	<div id="app">
-		<canvas id="game-canvas"></canvas>
+    <div id="app">
+        <!-- 3D Canvas -->
+        <canvas id="game-canvas"></canvas>
 
-		<div id="hud" class="overlay">
-			<div class="top-bar">
-				<div id="turn-indicator">Turn: -</div>
-				<div id="dice-display">Dice: -</div>
-				<div id="fps-display">FPS: -</div>
-			</div>
-			<div class="right-panel">
-				<div class="panel-card">
-					<h3>Leaderboard</h3>
-					<ol id="leaderboard"></ol>
-				</div>
-				<div class="panel-card">
-					<h3>Mini-map</h3>
-					<canvas id="minimap" width="160" height="160"></canvas>
-				</div>
-			</div>
-			<div class="bottom-bar">
-				<button id="roll-btn">Roll Dice</button>
-				<button id="end-turn-btn">End Turn</button>
-				<button id="login-btn">Login</button>
-				<button id="logout-btn" style="display:none">Logout</button>
-			</div>
-		</div>
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="screen">
+            <div class="loading-content">
+                <h1>3D Snakes & Ladders</h1>
+                <div class="loading-spinner"></div>
+                <p>Loading game...</p>
+            </div>
+        </div>
 
-		<div id="menu" class="overlay centered">
-			<div class="menu-card">
-				<h1>3D Snakes & Ladders</h1>
-				<div class="menu-actions">
-					<button id="play-single">Single Player</button>
-					<button id="play-local">Local Multiplayer</button>
-					<button id="play-online">Online Match</button>
-				</div>
-			</div>
-		</div>
-	</div>
+        <!-- Main Menu -->
+        <div id="main-menu" class="screen hidden">
+            <div class="menu-content">
+                <h1>3D Snakes & Ladders</h1>
+                <div class="menu-options">
+                    <button id="single-player-btn" class="menu-button primary">
+                        <span class="button-icon">🎯</span>
+                        Single Player
+                    </button>
+                    <button id="local-multiplayer-btn" class="menu-button secondary">
+                        <span class="button-icon">👥</span>
+                        Local Multiplayer
+                    </button>
+                    <button id="online-multiplayer-btn" class="menu-button secondary">
+                        <span class="button-icon">🌐</span>
+                        Online Multiplayer
+                    </button>
+                </div>
+                <div class="menu-footer">
+                    <button id="settings-btn" class="text-button">⚙️ Settings</button>
+                    <button id="about-btn" class="text-button">ℹ️ About</button>
+                </div>
+            </div>
+        </div>
 
-	<!-- Libraries: Three.js, controls, loaders, tween, socket.io, firebase -->
-	<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-	<script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
-	<script src="https://unpkg.com/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
-	<script src="https://unpkg.com/@tweenjs/tween.js@18.6.4/dist/tween.umd.js"></script>
-	<script src="https://cdn.socket.io/4.7.2/socket.io.min.js" crossorigin="anonymous"></script>
-	<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+        <!-- Game HUD -->
+        <div id="game-hud" class="hud hidden">
+            <!-- Top Bar -->
+            <div class="hud-top">
+                <div class="game-info">
+                    <div id="current-player" class="info-item">Player: <span id="player-name">1</span></div>
+                    <div id="dice-result" class="info-item">Dice: <span id="dice-value">-</span></div>
+                    <div id="turn-count" class="info-item">Turn: <span id="turn-number">1</span></div>
+                </div>
+                <div class="game-controls">
+                    <button id="roll-dice-btn" class="action-button primary">🎲 Roll Dice</button>
+                    <button id="end-turn-btn" class="action-button secondary" disabled>End Turn</button>
+                </div>
+            </div>
 
-	<script src="./app.js"></script>
+            <!-- Mini Map -->
+            <div class="hud-minimap">
+                <canvas id="minimap-canvas" width="150" height="150"></canvas>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="hud-leaderboard">
+                <h3>🏆 Leaderboard</h3>
+                <div id="leaderboard-list" class="leaderboard-entries">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="screen hidden">
+            <div class="game-over-content">
+                <h1 id="game-result">🎉 Victory!</h1>
+                <div class="final-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Winner:</span>
+                        <span id="winner-name" class="stat-value">Player 1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Turns:</span>
+                        <span id="total-turns" class="stat-value">15</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Snakes Hit:</span>
+                        <span id="snakes-hit" class="stat-value">2</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Ladders Climbed:</span>
+                        <span id="ladders-climbed" class="stat-value">3</span>
+                    </div>
+                </div>
+                <div class="game-over-actions">
+                    <button id="play-again-btn" class="menu-button primary">🎮 Play Again</button>
+                    <button id="main-menu-btn" class="menu-button secondary">🏠 Main Menu</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="panel hidden">
+            <div class="panel-content">
+                <h2>⚙️ Settings</h2>
+                <div class="setting-group">
+                    <label class="setting-item">
+                        <span>Sound Effects</span>
+                        <input type="checkbox" id="sound-enabled" checked>
+                    </label>
+                    <label class="setting-item">
+                        <span>Music</span>
+                        <input type="checkbox" id="music-enabled" checked>
+                    </label>
+                    <label class="setting-item">
+                        <span>Camera Auto-Follow</span>
+                        <input type="checkbox" id="camera-follow" checked>
+                    </label>
+                </div>
+                <div class="panel-actions">
+                    <button id="save-settings-btn" class="action-button primary">💾 Save</button>
+                    <button id="close-settings-btn" class="action-button secondary">✕ Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Screen -->
+        <div id="error-screen" class="screen hidden">
+            <div class="error-content">
+                <h1>⚠️ Error</h1>
+                <p id="error-message">Something went wrong while loading the game.</p>
+                <div class="error-actions">
+                    <button id="retry-btn" class="menu-button primary">🔄 Retry</button>
+                    <button id="reload-btn" class="menu-button secondary">🔄 Reload Page</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main entry point -->
+    <script type="module" src="./src/main.js"></script>
+
+    <!-- Test script (development only) -->
+    <script src="./test-game.js"></script>
 </body>
 </html>

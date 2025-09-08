@@ -1,0 +1,25 @@
+{
+  "name": "3d-snakes-ladders",
+  "version": "1.0.0",
+  "description": "A modern 3D Snakes and Ladders game built with Three.js",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "python3 -m http.server 3000 --bind 0.0.0.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "@vitejs/plugin-legacy": "^5.0.0",
+    "eslint": "^8.0.0"
+  },
+  "dependencies": {
+    "three": "^0.160.0",
+    "@tweenjs/tween.js": "^18.6.4"
+  },
+  "keywords": ["game", "three.js", "snakes-ladders", "3d", "webgl"],
+  "author": "Your Name",
+  "license": "MIT"
+}
