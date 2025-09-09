@@ -16,7 +16,6 @@
     "eslint": "^8.0.0"
   },
   "dependencies": {
-    "three": "^0.160.0",
     "@tweenjs/tween.js": "^18.6.4"
   },
   "keywords": ["game", "three.js", "snakes-ladders", "3d", "webgl"],

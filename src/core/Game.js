@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { SceneManager } from './SceneManager.js';
 import { GameState } from '../game/GameState.js';
 import { InputManager } from '../ui/InputManager.js';

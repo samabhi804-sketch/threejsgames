@@ -344,6 +344,62 @@ export class PlayerManager {
     }
 
     /**
+     * Render 2D players
+     */
+    render2D(ctx) {
+        if (!ctx) return;
+
+        const centerX = ctx.canvas.width / 2;
+        const centerY = ctx.canvas.height / 2;
+        const boardSize = 400;
+        const tileSize = boardSize / 10; // Assuming 10x10 board
+
+        this.playerMeshes.forEach((player, index) => {
+            if (!player || !player.userData) return;
+
+            const position = player.userData.position || 1;
+            const coords = this.getPathCoordinates(position, centerX, centerY, boardSize, tileSize);
+
+            if (coords) {
+                // Draw player as colored circle
+                ctx.fillStyle = this.playerColors[index];
+                ctx.beginPath();
+                ctx.arc(coords.x, coords.y, 15, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw player border
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw player number
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText((index + 1).toString(), coords.x, coords.y + 4);
+            }
+        });
+    }
+
+    /**
+     * Get 2D coordinates for a position
+     */
+    getPathCoordinates(position, centerX, centerY, boardSize, tileSize) {
+        if (position < 1 || position > 100) return null;
+
+        // Simple boustrophedon path calculation
+        const boardSizeNum = 10;
+        const pos = position - 1;
+        const row = Math.floor(pos / boardSizeNum);
+        const col = row % 2 === 0 ? pos % boardSizeNum : boardSizeNum - 1 - (pos % boardSizeNum);
+
+        const x = centerX - boardSize/2 + col * tileSize + tileSize/2;
+        const y = centerY - boardSize/2 + row * tileSize + tileSize/2;
+
+        return { x, y };
+    }
+
+    /**
      * Dispose of player resources
      */
     dispose() {

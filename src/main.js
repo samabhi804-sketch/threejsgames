@@ -16,6 +16,9 @@ console.log('✅ [DEBUG] All modules imported successfully');
 let gameInstance = null;
 let uiManager = null;
 
+// Global rendering mode - Always 2D
+window.RENDER_MODE = '2d';
+
 // Initialize the application
 async function initApp() {
     try {
@@ -27,13 +30,15 @@ async function initApp() {
         ErrorHandler.init();
         console.log('✅ [DEBUG] ErrorHandler initialized successfully');
 
-        // Check for required browser features
+        // Check for required browser features (Canvas support)
         console.log('🚀 [DEBUG] Step 2: Checking browser support...');
-        if (!checkBrowserSupport()) {
+        const supportCheck = checkBrowserSupport();
+        if (!supportCheck.success) {
             console.error('❌ [DEBUG] Browser support check failed');
-            throw new Error('Browser does not support required features');
+            throw new Error(supportCheck.message || 'Browser does not support required features');
         }
-        console.log('✅ [DEBUG] Browser support check passed');
+
+        console.log('✅ [DEBUG] Browser support check passed - using 2D mode');
 
         // Initialize UI Manager
         console.log('🚀 [DEBUG] Step 3: Initializing UI Manager...');
@@ -72,95 +77,31 @@ async function initApp() {
     }
 }
 
-// Check browser support for required features
+// Check browser support for required features (Canvas only)
 function checkBrowserSupport() {
-    console.log('🔍 [DEBUG] Checking browser support for required features...');
+    console.log('🔍 [DEBUG] Checking browser support for 2D canvas...');
 
-    const requiredFeatures = [
-        'WebGLRenderingContext',
-        'Canvas',
-        'Promise',
-        'Map',
-        'Set',
-        'requestAnimationFrame'
-    ];
-
-    // Check each feature
-    for (const feature of requiredFeatures) {
-        console.log(`🔍 [DEBUG] Checking feature: ${feature}`);
-
-        if (feature === 'WebGLRenderingContext') {
-            // Special check for WebGL
-            console.log(`🔍 [DEBUG] Testing WebGL support...`);
-            const canvas = document.createElement('canvas');
-            console.log(`🔍 [DEBUG] Created test canvas:`, canvas);
-
-            let gl = null;
-            try {
-                gl = canvas.getContext('webgl');
-                console.log(`🔍 [DEBUG] WebGL context:`, gl ? 'obtained' : 'failed');
-            } catch (error) {
-                console.error(`❌ [DEBUG] Error getting WebGL context:`, error);
-            }
-
-            if (!gl) {
-                try {
-                    gl = canvas.getContext('experimental-webgl');
-                    console.log(`🔍 [DEBUG] Experimental WebGL context:`, gl ? 'obtained' : 'failed');
-                } catch (error) {
-                    console.error(`❌ [DEBUG] Error getting experimental WebGL context:`, error);
-                }
-            }
-
-            if (!gl) {
-                console.error(`❌ [DEBUG] WebGL not supported!`);
-                console.error(`❌ [DEBUG] Browser info:`, {
-                    userAgent: navigator.userAgent,
-                    platform: navigator.platform,
-                    cookieEnabled: navigator.cookieEnabled,
-                    onLine: navigator.onLine
-                });
-                return false;
-            }
-
-            console.log(`✅ [DEBUG] WebGL supported, context:`, gl.constructor.name);
-            console.log(`🔍 [DEBUG] WebGL info:`, {
-                vendor: gl.getParameter(gl.VENDOR),
-                renderer: gl.getParameter(gl.RENDERER),
-                version: gl.getParameter(gl.VERSION),
-                maxTextureSize: gl.getParameter(gl.MAX_TEXTURE_SIZE)
-            });
-        } else if (typeof window[feature] === 'undefined') {
-            console.error(`❌ [DEBUG] Feature not supported: ${feature}`);
-            console.error(`❌ [DEBUG] window.${feature}:`, window[feature]);
-            return false;
-        } else {
-            console.log(`✅ [DEBUG] Feature supported: ${feature}`);
-        }
+    // Check if game canvas exists
+    const canvas = document.getElementById('game-canvas');
+    if (!canvas) {
+        console.log('❌ [DEBUG] Game canvas element not found');
+        return { success: false, message: 'Game canvas element not found in the DOM.' };
     }
 
-    // Additional WebGL check
+    // Check if canvas 2D context is available
     try {
-        const canvas = document.getElementById('game-canvas');
-        if (!canvas) {
-            console.error(`❌ [DEBUG] Canvas element not found!`);
-            return false;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            console.log('❌ [DEBUG] Canvas 2D context not available');
+            return { success: false, message: 'Canvas 2D context not available.' };
+        } else {
+            console.log('✅ [DEBUG] Canvas 2D context available');
+            return { success: true };
         }
-        console.log(`✅ [DEBUG] Canvas element found:`, canvas);
-
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        if (!gl) {
-            console.error(`❌ [DEBUG] Cannot get WebGL context from canvas!`);
-            return false;
-        }
-        console.log(`✅ [DEBUG] WebGL context from canvas obtained:`, gl.constructor.name);
     } catch (error) {
-        console.error(`❌ [DEBUG] Error checking canvas WebGL:`, error);
-        return false;
+        console.log('❌ [DEBUG] Error accessing canvas 2D context:', error);
+        return { success: false, message: 'Error accessing canvas 2D context: ' + error.message };
     }
-
-    console.log('✅ [DEBUG] All browser support checks passed');
-    return true;
 }
 
 // Set up global event listeners

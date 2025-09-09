@@ -67,9 +67,9 @@ export class UIManager {
         // Main screens
         this.screens = {
             loading: document.getElementById('loading-screen'),
-            mainMenu: document.getElementById('main-menu'),
+            'main-menu': document.getElementById('main-menu'),
             game: document.getElementById('game-hud'),
-            gameOver: document.getElementById('game-over-screen'),
+            'game-over': document.getElementById('game-over-screen'),
             settings: document.getElementById('settings-panel'),
             error: document.getElementById('error-screen')
         };
